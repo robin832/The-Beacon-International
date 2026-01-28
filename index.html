@@ -39,55 +39,63 @@
       textMuted: '#666666'
     };
 
-    // Opportunity configuration with full country names and exact dates
+    // Opportunity configuration with full country names, exact 2026 dates, and website URLs
     const OPPORTUNITIES = {
       "Viva Tech Paris (June)": {
         short: "Viva Tech Paris",
         color: "#FF6B6B",
         country: "France",
-        date: "11-14 June 2025"
+        date: "17-20 June 2026",
+        url: "https://vivatech.com/"
       },
       "Smart City World Expo Barcelona (November)": {
         short: "Smart City Barcelona",
         color: "#4ECDC4",
         country: "Spain",
-        date: "4-6 November 2025"
+        date: "3-5 November 2026",
+        url: "https://www.smartcityexpo.com/"
       },
       "Slush Helsinki (November)": {
         short: "Slush Helsinki",
         color: "#45B7D1",
         country: "Finland",
-        date: "19-20 November 2025"
+        date: "18-19 November 2026",
+        url: "https://slush.org/"
       },
       "Hannover Messe (April)": {
         short: "Hannover Messe",
         color: "#96CEB4",
         country: "Germany",
-        date: "31 March - 4 April 2025"
+        date: "20-24 April 2026",
+        url: "https://www.hannovermesse.de/"
       },
       "Drone Summit Riga (May)": {
         short: "Drone Summit Riga",
         color: "#F9CA24",
         country: "Latvia",
-        date: "14-15 May 2025"
+        date: "27 May 2026",
+        url: "https://dronesummit.lv/"
       },
       "Upstream Festival Rotterdam (May)": {
         short: "Upstream Rotterdam",
         color: "#A29BFE",
         country: "Netherlands",
-        date: "20-22 May 2025"
+        date: "21 May 2026",
+        url: "https://www.upstreamfestival.com/"
       },
       "Possidonia Athens (June)": {
         short: "Possidonia Athens",
         color: "#00B894",
         country: "Greece",
-        date: "1-5 June 2026"
+        date: "1-5 June 2026",
+        url: "https://posidonia-events.com/"
       },
       "FIT Ports & Trade Mission Malaysia (September)": {
         short: "FIT Malaysia",
         color: "#E17055",
         country: "Malaysia",
-        date: "15-18 September 2025"
+        date: "24-25 September 2026",
+        url: "https://www.portseasia.org/"
       }
     };
 
@@ -121,7 +129,17 @@
             <div className="flex items-center gap-3 mb-4">
               <div className="w-4 h-4 rounded-full" style={{ backgroundColor: event.color }}></div>
               <div>
-                <h3 className="text-lg font-semibold text-white">{event.name}</h3>
+                <a
+                  href={event.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-lg font-semibold text-white hover:underline flex items-center gap-2"
+                >
+                  {event.name}
+                  <svg className="w-4 h-4" style={{ color: COLORS.textMuted }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
                 <p className="text-sm" style={{ color: COLORS.textMuted }}>{event.country} • {event.date}</p>
               </div>
             </div>
@@ -132,10 +150,21 @@
               <p className="text-sm" style={{ color: COLORS.textMuted }}>companies interested</p>
             </div>
 
+            {/* Visit Website Button */}
+            <a
+              href={event.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center py-2 rounded-lg text-sm font-medium mb-4 transition-all hover:opacity-90"
+              style={{ backgroundColor: COLORS.accent, color: COLORS.bg }}
+            >
+              Visit Event Website
+            </a>
+
             {/* Companies list */}
             {event.companies.length > 0 ? (
               <div>
-                <p className="text-sm font-medium mb-3" style={{ color: COLORS.textSecondary }}>Interested Companies</p>
+                <p className="text-sm font-medium mb-3" style={{ color: COLORS.textSecondary }}>Visible Interested Companies</p>
                 <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
                   {event.companies.map((company, idx) => (
                     <span
@@ -214,7 +243,8 @@
             companies: counts[fullName]?.companies || [],
             color: info.color,
             country: info.country,
-            date: info.date
+            date: info.date,
+            url: info.url
           }));
 
           chartData.sort((a, b) => b.count - a.count);
