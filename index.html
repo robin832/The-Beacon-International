@@ -39,38 +39,9 @@
       textMuted: '#666666'
     };
 
-    // Opportunity configuration with full details
+    // Opportunity configuration with full details (ordered by month)
     const OPPORTUNITIES = {
-      "Viva Tech Paris (June)": {
-        short: "Viva Tech Paris",
-        color: "#FF6B6B",
-        country: "France",
-        date: "17-20 June 2026",
-        url: "https://vivatech.com/",
-        description: "Europe's largest startup and tech event, bringing together startups, CEOs, investors, and world leaders to celebrate innovation.",
-        industry: ["Tech", "Startups", "Innovation", "AI", "Digital"],
-        location: "Paris Expo Porte de Versailles"
-      },
-      "Smart City World Expo Barcelona (November)": {
-        short: "Smart City Barcelona",
-        color: "#4ECDC4",
-        country: "Spain",
-        date: "3-5 November 2026",
-        url: "https://www.smartcityexpo.com/",
-        description: "The world's leading event for cities and urban innovation, showcasing solutions for sustainable and intelligent urban development.",
-        industry: ["Smart Cities", "Urban Tech", "Sustainability", "IoT", "Mobility"],
-        location: "Fira Barcelona Gran Via"
-      },
-      "Slush Helsinki (November)": {
-        short: "Slush Helsinki",
-        color: "#45B7D1",
-        country: "Finland",
-        date: "18-19 November 2026",
-        url: "https://slush.org/",
-        description: "The world's leading startup event, connecting founders with top-tier investors, executives, and media from around the globe.",
-        industry: ["Startups", "VC", "Tech", "Innovation", "Entrepreneurship"],
-        location: "Helsinki Expo and Convention Centre"
-      },
+      // APRIL
       "Hannover Messe (April)": {
         short: "Hannover Messe",
         color: "#96CEB4",
@@ -81,6 +52,7 @@
         industry: ["Industrial", "Manufacturing", "Automation", "Energy", "Industry 4.0"],
         location: "Hannover Exhibition Grounds"
       },
+      // MAY
       "Drone Summit Riga (May)": {
         short: "Drone Summit Riga",
         color: "#F9CA24",
@@ -101,6 +73,17 @@
         industry: ["Startups", "Innovation", "Entrepreneurship", "Scale-ups"],
         location: "Rotterdam, Netherlands"
       },
+      // JUNE
+      "Viva Tech Paris (June)": {
+        short: "Viva Tech Paris",
+        color: "#FF6B6B",
+        country: "France",
+        date: "17-20 June 2026",
+        url: "https://vivatech.com/",
+        description: "Europe's largest startup and tech event, bringing together startups, CEOs, investors, and world leaders to celebrate innovation.",
+        industry: ["Tech", "Startups", "Innovation", "AI", "Digital"],
+        location: "Paris Expo Porte de Versailles"
+      },
       "Possidonia Athens (June)": {
         short: "Possidonia Athens",
         color: "#00B894",
@@ -111,7 +94,38 @@
         industry: ["Maritime", "Shipping", "Ports", "Logistics", "Naval"],
         location: "Metropolitan Expo Athens"
       },
-      "FIT Ports & Trade Mission Malaysia (September)": {
+      "Eurosatory Paris (June)": {
+        short: "Eurosatory Paris",
+        color: "#2D3436",
+        country: "France",
+        date: "15-19 June 2026",
+        url: "https://www.eurosatory.com/",
+        description: "The largest international exhibition for land and air-land defence and security, bringing together 2,000+ exhibitors from 61 countries.",
+        industry: ["Defence", "Security", "Military", "Aerospace", "Land Systems"],
+        location: "Paris Nord Villepinte"
+      },
+      // SEPTEMBER
+      "Bits & Pretzels München (September)": {
+        short: "Bits & Pretzels",
+        color: "#E84393",
+        country: "Germany",
+        date: "28-30 September 2026",
+        url: "https://www.bitsandpretzels.com/",
+        description: "Europe's leading founders festival during Oktoberfest, hosting 7,500 founders, investors, and startup leaders for networking and learning.",
+        industry: ["Startups", "VC", "Founders", "Tech", "Entrepreneurship"],
+        location: "ICM Munich & Oktoberfest"
+      },
+      "Defence Mission Germany (September)": {
+        short: "Defence Germany",
+        color: "#636E72",
+        country: "Germany",
+        date: "September 2026",
+        url: "https://www.enforcetac.com/",
+        description: "Trade mission focused on Germany's defence and security sector, connecting companies with opportunities in Europe's largest defence market.",
+        industry: ["Defence", "Security", "Military", "Trade Mission"],
+        location: "Germany"
+      },
+      "FIT Ports Malaysia (September)": {
         short: "FIT Malaysia",
         color: "#E17055",
         country: "Malaysia",
@@ -120,6 +134,48 @@
         description: "Premier ports and logistics event in Southeast Asia, connecting industry leaders and exploring trade opportunities.",
         industry: ["Ports", "Logistics", "Trade", "Maritime", "Supply Chain"],
         location: "Kuala Lumpur, Malaysia"
+      },
+      // OCTOBER
+      "SWITCH Singapore (October)": {
+        short: "SWITCH Singapore",
+        color: "#0984E3",
+        country: "Singapore",
+        date: "October 2026",
+        url: "https://www.switchsg.org/",
+        description: "Singapore Week of Innovation and Technology - Asia's leading deep tech and startup event connecting global innovators.",
+        industry: ["Tech", "Deep Tech", "Startups", "Innovation", "Asia"],
+        location: "Marina Bay Sands, Singapore"
+      },
+      // NOVEMBER
+      "SemiCon Europe München (November)": {
+        short: "SemiCon Europe",
+        color: "#6C5CE7",
+        country: "Germany",
+        date: "10-13 November 2026",
+        url: "https://www.semiconeuropa.org/",
+        description: "Europe's leading semiconductor and microelectronics event, showcasing innovations in chip design, AI, and advanced packaging.",
+        industry: ["Semiconductors", "Microelectronics", "Chips", "AI", "Manufacturing"],
+        location: "Messe München"
+      },
+      "Smart City Barcelona (November)": {
+        short: "Smart City Barcelona",
+        color: "#4ECDC4",
+        country: "Spain",
+        date: "3-5 November 2026",
+        url: "https://www.smartcityexpo.com/",
+        description: "The world's leading event for cities and urban innovation, showcasing solutions for sustainable and intelligent urban development.",
+        industry: ["Smart Cities", "Urban Tech", "Sustainability", "IoT", "Mobility"],
+        location: "Fira Barcelona Gran Via"
+      },
+      "Slush Helsinki (November)": {
+        short: "Slush Helsinki",
+        color: "#45B7D1",
+        country: "Finland",
+        date: "18-19 November 2026",
+        url: "https://slush.org/",
+        description: "The world's leading startup event, connecting founders with top-tier investors, executives, and media from around the globe.",
+        industry: ["Startups", "VC", "Tech", "Innovation", "Entrepreneurship"],
+        location: "Helsinki Expo and Convention Centre"
       }
     };
 
