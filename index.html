@@ -39,17 +39,124 @@
       textMuted: '#666666'
     };
 
-    // Opportunity configuration
+    // Opportunity configuration with full country names and exact dates
     const OPPORTUNITIES = {
-      "Viva Tech Paris (June)": { short: "Viva Tech Paris", color: "#FF6B6B", flag: "FR" },
-      "Smart City World Expo Barcelona (November)": { short: "Smart City Barcelona", color: "#4ECDC4", flag: "ES" },
-      "Slush Helsinki (November)": { short: "Slush Helsinki", color: "#45B7D1", flag: "FI" },
-      "Hannover Messe (April)": { short: "Hannover Messe", color: "#96CEB4", flag: "DE" },
-      "Drone Summit Riga (May)": { short: "Drone Summit Riga", color: "#F9CA24", flag: "LV" },
-      "Upstream Festival Rotterdam (May)": { short: "Upstream Rotterdam", color: "#A29BFE", flag: "NL" },
-      "Possidonia Athens (June)": { short: "Possidonia Athens", color: "#00B894", flag: "GR" },
-      "FIT Ports & Trade Mission Malaysia (September)": { short: "FIT Malaysia", color: "#E17055", flag: "MY" }
+      "Viva Tech Paris (June)": {
+        short: "Viva Tech Paris",
+        color: "#FF6B6B",
+        country: "France",
+        date: "11-14 June 2025"
+      },
+      "Smart City World Expo Barcelona (November)": {
+        short: "Smart City Barcelona",
+        color: "#4ECDC4",
+        country: "Spain",
+        date: "4-6 November 2025"
+      },
+      "Slush Helsinki (November)": {
+        short: "Slush Helsinki",
+        color: "#45B7D1",
+        country: "Finland",
+        date: "19-20 November 2025"
+      },
+      "Hannover Messe (April)": {
+        short: "Hannover Messe",
+        color: "#96CEB4",
+        country: "Germany",
+        date: "31 March - 4 April 2025"
+      },
+      "Drone Summit Riga (May)": {
+        short: "Drone Summit Riga",
+        color: "#F9CA24",
+        country: "Latvia",
+        date: "14-15 May 2025"
+      },
+      "Upstream Festival Rotterdam (May)": {
+        short: "Upstream Rotterdam",
+        color: "#A29BFE",
+        country: "Netherlands",
+        date: "20-22 May 2025"
+      },
+      "Possidonia Athens (June)": {
+        short: "Possidonia Athens",
+        color: "#00B894",
+        country: "Greece",
+        date: "1-5 June 2026"
+      },
+      "FIT Ports & Trade Mission Malaysia (September)": {
+        short: "FIT Malaysia",
+        color: "#E17055",
+        country: "Malaysia",
+        date: "15-18 September 2025"
+      }
     };
+
+    // Modal Component
+    function Modal({ isOpen, onClose, event }) {
+      if (!isOpen || !event) return null;
+
+      return (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
+          onClick={onClose}
+        >
+          <div
+            className="w-full max-w-md rounded-lg p-6 relative"
+            style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-1 rounded hover:bg-white/10 transition-colors"
+              style={{ color: COLORS.textMuted }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-4 h-4 rounded-full" style={{ backgroundColor: event.color }}></div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">{event.name}</h3>
+                <p className="text-sm" style={{ color: COLORS.textMuted }}>{event.country} • {event.date}</p>
+              </div>
+            </div>
+
+            {/* Interest count */}
+            <div className="mb-4 pb-4" style={{ borderBottom: `1px solid ${COLORS.border}` }}>
+              <p className="text-3xl font-bold" style={{ color: COLORS.accent }}>{event.count}</p>
+              <p className="text-sm" style={{ color: COLORS.textMuted }}>companies interested</p>
+            </div>
+
+            {/* Companies list */}
+            {event.companies.length > 0 ? (
+              <div>
+                <p className="text-sm font-medium mb-3" style={{ color: COLORS.textSecondary }}>Interested Companies</p>
+                <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+                  {event.companies.map((company, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1.5 rounded-full text-sm"
+                      style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}
+                    >
+                      {company}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: COLORS.textMuted }}>
+                {event.count > 0 ? 'Company names not available for display' : 'No interest registered yet'}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
 
     function App() {
       const [data, setData] = useState([]);
@@ -59,7 +166,7 @@
       const [viewMode, setViewMode] = useState('pie');
       const [isRefreshing, setIsRefreshing] = useState(false);
       const [totalResponses, setTotalResponses] = useState(0);
-      const [showCompanies, setShowCompanies] = useState(true);
+      const [selectedEvent, setSelectedEvent] = useState(null);
 
       const fetchData = useCallback(async () => {
         setIsRefreshing(true);
@@ -106,7 +213,8 @@
             count: counts[fullName]?.count || 0,
             companies: counts[fullName]?.companies || [],
             color: info.color,
-            flag: info.flag
+            country: info.country,
+            date: info.date
           }));
 
           chartData.sort((a, b) => b.count - a.count);
@@ -140,26 +248,38 @@
           return (
             <div style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }} className="p-4 rounded-lg max-w-xs">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>{d.flag}</span>
+                <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>{d.country}</span>
                 <p className="font-medium text-white text-sm">{d.fullName}</p>
               </div>
-              <p className="text-2xl font-semibold mb-3" style={{ color: COLORS.accent }}>{d.count} interested</p>
-              {showCompanies && d.companies.length > 0 && (
-                <div className="border-t pt-3" style={{ borderColor: COLORS.border }}>
-                  <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>Companies interested:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {d.companies.map((company, idx) => (
-                      <span key={idx} className="text-xs px-2 py-1 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>
-                        {company}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>{d.date}</p>
+              <p className="text-2xl font-semibold" style={{ color: COLORS.accent }}>{d.count} interested</p>
             </div>
           );
         }
         return null;
+      };
+
+      // Custom label for pie chart with lines
+      const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, percent, index }) => {
+        const RADIAN = Math.PI / 180;
+        const radius = outerRadius + 30;
+        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+        if (percent < 0.05) return null; // Don't show labels for very small slices
+
+        return (
+          <text
+            x={x}
+            y={y}
+            fill={COLORS.textSecondary}
+            textAnchor={x > cx ? 'start' : 'end'}
+            dominantBaseline="central"
+            fontSize={11}
+          >
+            {name} ({(percent * 100).toFixed(0)}%)
+          </text>
+        );
       };
 
       if (loading) {
@@ -190,7 +310,7 @@
                 <p className="text-sm" style={{ color: COLORS.textMuted }}>Live survey results</p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {lastUpdated && (
                   <span className="text-xs" style={{ color: COLORS.textMuted }}>
                     Updated {lastUpdated.toLocaleTimeString()}
@@ -260,17 +380,19 @@
                 </button>
               </div>
 
-              <button
-                onClick={() => setShowCompanies(!showCompanies)}
-                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: showCompanies ? COLORS.accent : COLORS.cardBg,
-                  color: showCompanies ? COLORS.bg : COLORS.textSecondary,
-                  border: `1px solid ${showCompanies ? COLORS.accent : COLORS.border}`
-                }}
+              {/* Submit Interest Button - More Visible */}
+              <a
+                href="https://forms.monday.com/forms/952d3df894af793199474c6caf6b4199"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2 rounded-full text-sm font-semibold transition-all hover:opacity-90 flex items-center gap-2"
+                style={{ backgroundColor: COLORS.accent, color: COLORS.bg }}
               >
-                {showCompanies ? 'Hide' : 'Show'} Companies
-              </button>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Submit Your Interest
+              </a>
             </div>
 
             {/* Main Content - 2 Column Layout */}
@@ -312,9 +434,11 @@
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          outerRadius={140}
-                          innerRadius={70}
+                          outerRadius={120}
+                          innerRadius={60}
                           paddingAngle={2}
+                          label={renderCustomLabel}
+                          labelLine={{ stroke: COLORS.textMuted, strokeWidth: 1 }}
                         >
                           {data.filter(d => d.count > 0).map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -337,7 +461,7 @@
                         <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-white truncate">{item.name}</p>
-                          <p className="text-xs truncate" style={{ color: COLORS.textMuted }}>{item.flag}</p>
+                          <p className="text-xs truncate" style={{ color: COLORS.textMuted }}>{item.country} • {item.date}</p>
                         </div>
                       </div>
                       <span className="text-lg font-semibold ml-2" style={{ color: item.color }}>{item.count}</span>
@@ -347,50 +471,49 @@
               </div>
             </div>
 
-            {/* Detailed Cards - Below */}
-            {showCompanies && (
-              <div className="mt-6">
-                <h3 className="text-sm font-medium mb-4" style={{ color: COLORS.textMuted }}>Company Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {data.filter(item => item.companies.length > 0).map((item) => (
-                    <div
-                      key={item.fullName}
-                      className="rounded-lg p-4"
-                      style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                        <p className="font-medium text-white text-sm">{item.fullName}</p>
-                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>{item.flag}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {item.companies.map((company, idx) => (
-                          <span key={idx} className="text-xs px-2 py-1 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>
-                            {company}
-                          </span>
-                        ))}
-                      </div>
+            {/* Event Cards - Clickable */}
+            <div className="mt-6">
+              <h3 className="text-sm font-medium mb-4" style={{ color: COLORS.textMuted }}>Click an event to view interested companies</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {data.map((item) => (
+                  <button
+                    key={item.fullName}
+                    onClick={() => setSelectedEvent(item)}
+                    className="rounded-lg p-4 text-left transition-all hover:scale-[1.02] hover:shadow-lg"
+                    style={{
+                      backgroundColor: COLORS.cardBg,
+                      border: `1px solid ${COLORS.border}`,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                      <p className="font-medium text-white text-sm truncate">{item.name}</p>
                     </div>
-                  ))}
-                </div>
+                    <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>{item.country} • {item.date}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold" style={{ color: item.color }}>{item.count}</span>
+                      <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>
+                        {item.companies.length} {item.companies.length === 1 ? 'company' : 'companies'}
+                      </span>
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Footer */}
             <div className="text-center mt-8 text-sm" style={{ color: COLORS.textMuted }}>
-              <p>
-                <a
-                  href="https://forms.monday.com/forms/952d3df894af793199474c6caf6b4199"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                  style={{ color: COLORS.accent }}
-                >
-                  Submit your interest
-                </a>
-              </p>
+              <p>Powered by The Beacon International</p>
             </div>
           </div>
+
+          {/* Modal */}
+          <Modal
+            isOpen={selectedEvent !== null}
+            onClose={() => setSelectedEvent(null)}
+            event={selectedEvent}
+          />
         </div>
       );
     }
