@@ -11,26 +11,44 @@
   <script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
   <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    body { margin: 0; }
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    body {
+      margin: 0;
+      background-color: #1c1c1c;
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
-  
+
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
     const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } = Recharts;
 
+    // Design tokens
+    const COLORS = {
+      bg: '#1c1c1c',
+      cardBg: '#232323',
+      border: '#333333',
+      accent: '#3ecf8e',
+      accentDark: '#2da06b',
+      textPrimary: '#ffffff',
+      textSecondary: '#888888',
+      textMuted: '#666666'
+    };
+
     // Opportunity configuration
     const OPPORTUNITIES = {
-      "Viva Tech Paris (June)": { short: "Viva Tech Paris", color: "#FF6B6B", flag: "🇫🇷" },
-      "Smart City World Expo Barcelona (November)": { short: "Smart City Barcelona", color: "#4ECDC4", flag: "🇪🇸" },
-      "Slush Helsinki (November)": { short: "Slush Helsinki", color: "#45B7D1", flag: "🇫🇮" },
-      "Hannover Messe (April)": { short: "Hannover Messe", color: "#96CEB4", flag: "🇩🇪" },
-      "Drone Summit Riga (May)": { short: "Drone Summit Riga", color: "#F9CA24", flag: "🇱🇻" },
-      "Upstream Festival Rotterdam (May)": { short: "Upstream Rotterdam", color: "#A29BFE", flag: "🇳🇱" },
-      "Possidonia Athens (June)": { short: "Possidonia Athens", color: "#00B894", flag: "🇬🇷" },
-      "FIT Ports & Trade Mission Malaysia (September)": { short: "FIT Malaysia", color: "#E17055", flag: "🇲🇾" }
+      "Viva Tech Paris (June)": { short: "Viva Tech Paris", color: "#FF6B6B", flag: "FR" },
+      "Smart City World Expo Barcelona (November)": { short: "Smart City Barcelona", color: "#4ECDC4", flag: "ES" },
+      "Slush Helsinki (November)": { short: "Slush Helsinki", color: "#45B7D1", flag: "FI" },
+      "Hannover Messe (April)": { short: "Hannover Messe", color: "#96CEB4", flag: "DE" },
+      "Drone Summit Riga (May)": { short: "Drone Summit Riga", color: "#F9CA24", flag: "LV" },
+      "Upstream Festival Rotterdam (May)": { short: "Upstream Rotterdam", color: "#A29BFE", flag: "NL" },
+      "Possidonia Athens (June)": { short: "Possidonia Athens", color: "#00B894", flag: "GR" },
+      "FIT Ports & Trade Mission Malaysia (September)": { short: "FIT Malaysia", color: "#E17055", flag: "MY" }
     };
 
     function App() {
@@ -38,23 +56,23 @@
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
       const [lastUpdated, setLastUpdated] = useState(null);
-      const [viewMode, setViewMode] = useState('bar');
+      const [viewMode, setViewMode] = useState('pie');
       const [isRefreshing, setIsRefreshing] = useState(false);
       const [totalResponses, setTotalResponses] = useState(0);
       const [showCompanies, setShowCompanies] = useState(true);
 
       const fetchData = useCallback(async () => {
         setIsRefreshing(true);
-        
+
         try {
           const response = await fetch('/api/survey-data');
-          
+
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
           }
-          
+
           const result = await response.json();
-          
+
           if (result.error) {
             throw new Error(result.error);
           }
@@ -111,22 +129,27 @@
         return () => clearInterval(interval);
       }, [fetchData]);
 
+      // Calculate stats
+      const totalInterests = data.reduce((sum, d) => sum + d.count, 0);
+      const topEvent = data.length > 0 ? data[0] : null;
+      const uniqueCompanies = new Set(data.flatMap(d => d.companies)).size;
+
       const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
           const d = payload[0].payload;
           return (
-            <div className="bg-white p-4 rounded-xl shadow-2xl border border-gray-100 max-w-xs">
+            <div style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }} className="p-4 rounded-lg max-w-xs">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{d.flag}</span>
-                <p className="font-bold text-gray-800 text-sm">{d.fullName}</p>
+                <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>{d.flag}</span>
+                <p className="font-medium text-white text-sm">{d.fullName}</p>
               </div>
-              <p className="text-3xl font-bold mb-3" style={{ color: d.color }}>{d.count} interested</p>
+              <p className="text-2xl font-semibold mb-3" style={{ color: COLORS.accent }}>{d.count} interested</p>
               {showCompanies && d.companies.length > 0 && (
-                <div className="border-t pt-3">
-                  <p className="text-xs text-gray-500 mb-2">🏢 Companies interested:</p>
+                <div className="border-t pt-3" style={{ borderColor: COLORS.border }}>
+                  <p className="text-xs mb-2" style={{ color: COLORS.textMuted }}>Companies interested:</p>
                   <div className="flex flex-wrap gap-1">
                     {d.companies.map((company, idx) => (
-                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                      <span key={idx} className="text-xs px-2 py-1 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>
                         {company}
                       </span>
                     ))}
@@ -141,10 +164,10 @@
 
       if (loading) {
         return (
-          <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+          <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.bg }}>
             <div className="text-center">
-              <div className="text-6xl mb-4 animate-bounce">✈️</div>
-              <p className="text-blue-200 text-xl">Loading survey results...</p>
+              <div className="w-8 h-8 border-2 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: COLORS.border, borderTopColor: COLORS.accent }}></div>
+              <p style={{ color: COLORS.textSecondary }}>Loading survey results...</p>
             </div>
           </div>
         );
@@ -153,187 +176,218 @@
       const maxCount = Math.max(...data.map(d => d.count), 1);
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4 md:p-8">
-          <div className="max-w-6xl mx-auto">
-            
-            {/* Header */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 mb-6 border border-white/20">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl shadow-lg text-4xl">
-                    🌍
-                  </div>
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white">The Beacon International</h1>
-                    <p className="text-blue-200/80">Live community interest • 2025 opportunities</p>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl">
-                    <span>👥</span>
-                    <span className="text-white font-semibold">{totalResponses} responses</span>
-                  </div>
-                  
-                  <button
-                    onClick={() => setShowCompanies(!showCompanies)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
-                      showCompanies ? 'bg-green-500/20 text-green-300' : 'bg-white/10 text-gray-300'
-                    }`}
-                  >
-                    {showCompanies ? '👁️' : '🙈'} Companies
-                  </button>
-                  
-                  <div className="flex bg-white/10 rounded-xl p-1">
-                    <button
-                      onClick={() => setViewMode('bar')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        viewMode === 'bar' ? 'bg-white text-blue-900' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Bar
-                    </button>
-                    <button
-                      onClick={() => setViewMode('pie')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        viewMode === 'pie' ? 'bg-white text-blue-900' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Pie
-                    </button>
-                  </div>
+        <div className="min-h-screen p-4 md:p-6" style={{ backgroundColor: COLORS.bg }}>
+          <div className="max-w-7xl mx-auto">
 
-                  <button
-                    onClick={fetchData}
-                    disabled={isRefreshing}
-                    className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl transition-all disabled:opacity-50 shadow-lg"
-                  >
-                    <span className={isRefreshing ? 'animate-spin' : ''}>🔄</span>
-                    Refresh
-                  </button>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg" style={{ backgroundColor: COLORS.accent, color: COLORS.bg }}>
+                  TB
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-white">The Beacon International</h1>
+                  <p className="text-sm" style={{ color: COLORS.textMuted }}>Live survey results</p>
                 </div>
               </div>
 
-              {error && (
-                <div className="mt-4 bg-red-500/20 border border-red-500/30 text-red-200 px-4 py-2 rounded-xl text-sm">
-                  ⚠️ {error}
-                </div>
-              )}
-
-              {lastUpdated && (
-                <p className="text-xs text-blue-300/50 mt-4">
-                  Updated {lastUpdated.toLocaleTimeString()} • Auto-refreshes every 15s
-                </p>
-              )}
-            </div>
-
-            {/* Chart */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 mb-6 border border-white/20">
-              {viewMode === 'bar' ? (
-                <div style={{ height: '400px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={data}
-                      layout="vertical"
-                      margin={{ top: 20, right: 40, left: 20, bottom: 20 }}
-                    >
-                      <XAxis type="number" domain={[0, maxCount + 1]} stroke="#94a3b8" />
-                      <YAxis 
-                        type="category" 
-                        dataKey="name" 
-                        width={140}
-                        tick={{ fill: '#e2e8f0', fontSize: 12 }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="count" radius={[0, 12, 12, 0]} animationDuration={800}>
-                        {data.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div style={{ height: '400px' }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={data.filter(d => d.count > 0)}
-                        dataKey="count"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={150}
-                        innerRadius={60}
-                        paddingAngle={2}
-                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                        labelLine={{ stroke: '#94a3b8' }}
-                      >
-                        {data.filter(d => d.count > 0).map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </div>
-
-            {/* Detailed Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data.map((item, idx) => (
-                <div 
-                  key={item.fullName}
-                  className="bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all"
+              <div className="flex items-center gap-2">
+                {lastUpdated && (
+                  <span className="text-xs" style={{ color: COLORS.textMuted }}>
+                    Updated {lastUpdated.toLocaleTimeString()}
+                  </span>
+                )}
+                <button
+                  onClick={fetchData}
+                  disabled={isRefreshing}
+                  className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
                 >
-                  <div className="flex items-start gap-4">
-                    <div 
-                      className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shadow-lg"
-                      style={{ backgroundColor: item.color + '30' }}
-                    >
-                      {item.flag}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold text-white truncate pr-2">{item.fullName}</p>
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-2xl font-bold" style={{ color: item.color }}>{item.count}</p>
+                  <svg className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} style={{ color: COLORS.textSecondary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-6 px-4 py-3 rounded-lg text-sm" style={{ backgroundColor: '#3d2020', border: '1px solid #5c3030', color: '#ff8080' }}>
+                {error}
+              </div>
+            )}
+
+            {/* Stats Bar - 4 Metric Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                <p className="text-xs font-medium mb-1" style={{ color: COLORS.textMuted }}>Total Responses</p>
+                <p className="text-2xl font-semibold text-white">{totalResponses}</p>
+              </div>
+              <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                <p className="text-xs font-medium mb-1" style={{ color: COLORS.textMuted }}>Total Interests</p>
+                <p className="text-2xl font-semibold" style={{ color: COLORS.accent }}>{totalInterests}</p>
+              </div>
+              <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                <p className="text-xs font-medium mb-1" style={{ color: COLORS.textMuted }}>Top Event</p>
+                <p className="text-lg font-semibold text-white truncate">{topEvent?.name || '-'}</p>
+              </div>
+              <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                <p className="text-xs font-medium mb-1" style={{ color: COLORS.textMuted }}>Companies</p>
+                <p className="text-2xl font-semibold text-white">{uniqueCompanies}</p>
+              </div>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2 p-1 rounded-full" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                <button
+                  onClick={() => setViewMode('pie')}
+                  className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                  style={{
+                    backgroundColor: viewMode === 'pie' ? COLORS.accent : 'transparent',
+                    color: viewMode === 'pie' ? COLORS.bg : COLORS.textSecondary
+                  }}
+                >
+                  Pie
+                </button>
+                <button
+                  onClick={() => setViewMode('bar')}
+                  className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                  style={{
+                    backgroundColor: viewMode === 'bar' ? COLORS.accent : 'transparent',
+                    color: viewMode === 'bar' ? COLORS.bg : COLORS.textSecondary
+                  }}
+                >
+                  Bar
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowCompanies(!showCompanies)}
+                className="px-4 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={{
+                  backgroundColor: showCompanies ? COLORS.accent : COLORS.cardBg,
+                  color: showCompanies ? COLORS.bg : COLORS.textSecondary,
+                  border: `1px solid ${showCompanies ? COLORS.accent : COLORS.border}`
+                }}
+              >
+                {showCompanies ? 'Hide' : 'Show'} Companies
+              </button>
+            </div>
+
+            {/* Main Content - 2 Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+              {/* Chart - Left Column (2/3 width) */}
+              <div className="lg:col-span-2 rounded-lg p-6" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                {viewMode === 'bar' ? (
+                  <div style={{ height: '400px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={data}
+                        layout="vertical"
+                        margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+                      >
+                        <XAxis type="number" domain={[0, maxCount + 1]} stroke={COLORS.textMuted} tick={{ fill: COLORS.textMuted }} />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          width={140}
+                          tick={{ fill: COLORS.textSecondary, fontSize: 12 }}
+                        />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="count" radius={[0, 4, 4, 0]} animationDuration={800}>
+                          {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div style={{ height: '400px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={data.filter(d => d.count > 0)}
+                          dataKey="count"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={140}
+                          innerRadius={70}
+                          paddingAngle={2}
+                        >
+                          {data.filter(d => d.count > 0).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
+
+              {/* Legend - Right Column (1/3 width) */}
+              <div className="rounded-lg p-4" style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}>
+                <h3 className="text-sm font-medium mb-4" style={{ color: COLORS.textMuted }}>Events</h3>
+                <div className="space-y-3">
+                  {data.map((item) => (
+                    <div key={item.fullName} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{item.name}</p>
+                          <p className="text-xs truncate" style={{ color: COLORS.textMuted }}>{item.flag}</p>
                         </div>
                       </div>
-                      
-                      {showCompanies && item.companies.length > 0 && (
-                        <div className="mt-3 flex items-start gap-2">
-                          <span className="text-blue-300/50">🏢</span>
-                          <p className="text-sm text-blue-200/70">
-                            {item.companies.join(', ')}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {item.companies.length === 0 && item.count > 0 && (
-                        <p className="text-sm text-blue-200/50 mt-2 italic">
-                          {item.count} interested (companies not displayed)
-                        </p>
-                      )}
+                      <span className="text-lg font-semibold ml-2" style={{ color: item.color }}>{item.count}</span>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
 
+            {/* Detailed Cards - Below */}
+            {showCompanies && (
+              <div className="mt-6">
+                <h3 className="text-sm font-medium mb-4" style={{ color: COLORS.textMuted }}>Company Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {data.filter(item => item.companies.length > 0).map((item) => (
+                    <div
+                      key={item.fullName}
+                      className="rounded-lg p-4"
+                      style={{ backgroundColor: COLORS.cardBg, border: `1px solid ${COLORS.border}` }}
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                        <p className="font-medium text-white text-sm">{item.fullName}</p>
+                        <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>{item.flag}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {item.companies.map((company, idx) => (
+                          <span key={idx} className="text-xs px-2 py-1 rounded" style={{ backgroundColor: COLORS.border, color: COLORS.textSecondary }}>
+                            {company}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Footer */}
-            <div className="text-center mt-8 text-blue-300/50 text-sm">
-              <p>Powered by The Beacon</p>
-              <p className="mt-1">
-                <a 
-                  href="https://forms.monday.com/forms/952d3df894af793199474c6caf6b4199" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-blue-400 hover:text-blue-300 underline"
+            <div className="text-center mt-8 text-sm" style={{ color: COLORS.textMuted }}>
+              <p>
+                <a
+                  href="https://forms.monday.com/forms/952d3df894af793199474c6caf6b4199"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                  style={{ color: COLORS.accent }}
                 >
-                  Submit your interest →
+                  Submit your interest
                 </a>
               </p>
             </div>
