@@ -17,23 +17,23 @@ module.exports = async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
 
-  // Get API token from environment
-  const MONDAY_API_TOKEN = process.env.MONDAY_API_TOKEN;
-
-  if (!MONDAY_API_TOKEN) {
-    return res.status(500).json({
-      error: 'MONDAY_API_TOKEN not configured',
-      hint: 'Add MONDAY_API_TOKEN to Vercel Environment Variables'
-    });
-  }
-
-  // Check cache first
-  const now = Date.now();
-  if (cache.data && (now - cache.timestamp) < CACHE_TTL) {
-    return res.status(200).json(cache.data);
-  }
-
   try {
+    // Get API token from environment
+    const MONDAY_API_TOKEN = process.env.MONDAY_API_TOKEN;
+
+    if (!MONDAY_API_TOKEN) {
+      return res.status(500).json({
+        error: 'MONDAY_API_TOKEN not configured',
+        hint: 'Add MONDAY_API_TOKEN to Vercel Environment Variables'
+      });
+    }
+
+    // Check cache first
+    const now = Date.now();
+    if (cache.data && (now - cache.timestamp) < CACHE_TTL) {
+      return res.status(200).json(cache.data);
+    }
+
     const query = `
       query {
         boards(ids: [${BOARD_ID}]) {
@@ -52,9 +52,6 @@ module.exports = async function handler(req, res) {
       }
     `;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
     const response = await fetch('https://api.monday.com/v2', {
       method: 'POST',
       headers: {
@@ -62,11 +59,8 @@ module.exports = async function handler(req, res) {
         'Authorization': MONDAY_API_TOKEN,
         'API-Version': '2024-01'
       },
-      body: JSON.stringify({ query }),
-      signal: controller.signal
+      body: JSON.stringify({ query })
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error('Monday.com HTTP error:', response.status);
@@ -134,16 +128,17 @@ module.exports = async function handler(req, res) {
     return res.status(200).json(result);
 
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Survey API Error:', error.name, error.message);
 
     // Return cached data if available
     if (cache.data) {
-      return res.status(200).json({ ...cache.data, cached: true, error: error.message });
+      return res.status(200).json({ ...cache.data, cached: true });
     }
 
     return res.status(500).json({
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
+      name: error.name
     });
   }
 };
